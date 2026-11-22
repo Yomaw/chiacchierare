@@ -120,6 +120,26 @@
       display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:20}
   .wa svg{width:30px;height:30px;fill:#fff}
 
+  /* ===== Phone: centre everything ===== */
+  @media(max-width:720px){
+    main, footer{text-align:center}
+    .hero p.lead, .sub{margin-left:auto;margin-right:auto}
+    .hero .ctas, .contact .ctas{justify-content:center}
+    .hero .ctas .btn{width:100%;max-width:320px;text-align:center}
+    .hero-icon{margin:0 auto}
+    .card .icon{margin-left:auto;margin-right:auto}
+    .step{padding:66px 22px 24px}
+    .step::before{left:50%;transform:translateX(-50%)}
+    .price{align-items:center}
+    .price.featured .tag{left:50%;transform:translateX(-50%);white-space:nowrap}
+    .price ul{display:inline-block;text-align:left}
+    .price .btn{align-self:stretch;text-align:center}
+    .portrait{margin-left:auto;margin-right:auto}
+    summary{text-align:center;padding:0 18px}
+    summary::after{float:none;position:absolute;right:20px}
+    details{position:relative}
+  }
+
   [data-lang="en"] .it{display:none} [data-lang="it"] .en{display:none}
 </style>
 </head>
