@@ -302,7 +302,7 @@
   <div class="wrap">
     <!-- EDIT: name and VAT number (required on Italian business websites) -->
     © <span id="year"></span> Chiacchiere in English · Leonardo Lollini · P.IVA 04365051202 ·
-    <a href="privacy.html">Privacy</a> <!-- EDIT: create privacy.html with your GDPR notice -->
+    <a id="privacy-link" href="privacy.html">Privacy</a>
   </div>
 </footer>
 
@@ -318,6 +318,7 @@
     const next = b.dataset.lang === 'it' ? 'en' : 'it';
     b.dataset.lang = next;
     document.documentElement.lang = next;
+    document.getElementById('privacy-link').href = next === 'en' ? 'privacy.html?lang=en' : 'privacy.html';
   }
 </script>
 </body>
