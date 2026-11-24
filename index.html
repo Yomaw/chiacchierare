@@ -181,6 +181,9 @@
     summary::after{float:none;position:absolute;right:20px}
     details{position:relative}
     .booking{padding:0;margin:0 -10px}
+    /* Video edge to edge on phones */
+    .about-grid{gap:28px}
+    .vp{width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);border-radius:0}
   }
 
   [data-lang="en"] .it{display:none} [data-lang="it"] .en{display:none}
@@ -319,7 +322,7 @@
       </div>
       <!-- Intro video: the file must sit next to index.html and be called exactly "intro.mp4" -->
       <div class="video vp paused" id="vp">
-        <video src="intro.mp4#t=0.1" muted playsinline preload="metadata"></video>
+        <video src="intro.mp4#t=0.1" muted playsinline webkit-playsinline preload="auto"></video>
         <button class="vp-big" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
         <button class="vp-sound" hidden><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><span class="it">Attiva l'audio</span><span class="en">Tap for sound</span></button>
         <div class="vp-bar">
@@ -448,8 +451,10 @@
     new IntersectionObserver(es=>es.forEach(en=>{
       inView=en.isIntersecting;
       if(inView && !userPaused && !v.ended) play(); else if(!inView && !v.paused) v.pause();
-    }),{threshold:.6}).observe(box);
+    }),{threshold:.5}).observe(box);
   }
+  // make sure browsers treat it as muted so it may start on its own
+  v.muted=true; v.defaultMuted=true; v.setAttribute('muted','');
   ui();
 })();
 </script>
