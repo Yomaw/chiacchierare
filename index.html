@@ -98,6 +98,34 @@
          color:var(--muted);text-align:center;overflow:hidden}
   .video iframe,.video video{width:100%;height:100%;border:0}
 
+  /* Custom video player */
+  .vp{position:relative;background:var(--navy);cursor:pointer;display:block}
+  .vp video{display:block;object-fit:contain;background:var(--navy)}
+  .vp-big{position:absolute;inset:0;margin:auto;width:76px;height:76px;border-radius:50%;border:0;cursor:pointer;
+          background:var(--brick);color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.3);
+          transition:transform .2s,opacity .2s}
+  .vp-big:hover{transform:scale(1.07)}
+  .vp-big svg{width:30px;height:30px;fill:#fff;margin-left:4px}
+  .vp.playing .vp-big{opacity:0;pointer-events:none}
+  .vp-sound{position:absolute;top:12px;left:12px;border:0;border-radius:30px;padding:7px 14px;cursor:pointer;
+            background:rgba(30,43,74,.85);color:#fff;font:600 .85rem "DM Sans",sans-serif;
+            box-shadow:0 4px 12px rgba(0,0,0,.25);animation:vp-pulse 2s ease-in-out infinite}
+  .vp-sound[hidden]{display:none}
+  @keyframes vp-pulse{50%{box-shadow:0 0 0 6px rgba(242,164,136,.45)}}
+  .vp-bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:22px 12px 10px;
+          background:linear-gradient(transparent,rgba(30,43,74,.85));opacity:0;transition:opacity .25s}
+  .vp:hover .vp-bar,.vp.paused .vp-bar,.vp:focus-within .vp-bar{opacity:1}
+  @media(hover:none){.vp-bar{opacity:1}}
+  .vp-bar button{background:none;border:0;cursor:pointer;width:30px;height:30px;display:grid;place-items:center;padding:0}
+  .vp-bar svg{width:20px;height:20px;fill:#fff}
+  .vp-track{flex:1;height:6px;border-radius:6px;background:rgba(255,255,255,.3);cursor:pointer;position:relative}
+  .vp-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:var(--peach)}
+  .vp-time{color:#fff;font-size:.8rem;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+  .vp.missing{cursor:default;background:var(--sand)}
+  .vp.missing video,.vp.missing .vp-big,.vp.missing .vp-bar,.vp.missing .vp-sound{display:none}
+  .vp-missing{display:none;position:absolute;inset:0;place-items:center;color:var(--muted)}
+  .vp.missing .vp-missing{display:grid}
+
   /* FAQ */
   details{background:var(--white);border:1px solid var(--sand);border-radius:var(--radius);padding:18px 22px;margin-bottom:12px}
   summary{cursor:pointer;font-weight:600;list-style:none}
@@ -281,9 +309,19 @@
         <p class="it">Ciao! Sono Leonardo, madrelingua inglese e vivo in Italia. Aiuto gli adulti a parlare inglese con sicurezza, in un'atmosfera rilassata e senza giudizi. Ogni lezione è una vera conversazione, costruita sui tuoi interessi e sui tuoi obiettivi.</p>
         <p class="en">Hi! I'm Leonardo, a native English speaker living in Italy. I help adults speak English with confidence, in a relaxed, judgement-free setting. Every lesson is a real conversation built around your interests and goals.</p>
       </div>
-      <div class="video">
-        <!-- EDIT: the video file must sit next to index.html in your repository with exactly this name -->
-        <video src="intro.mp4" controls playsinline preload="metadata"></video>
+      <!-- Intro video: the file must sit next to index.html and be called exactly "intro.mp4" -->
+      <div class="video vp paused" id="vp">
+        <video src="intro.mp4#t=0.1" muted playsinline preload="metadata"></video>
+        <button class="vp-big" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+        <button class="vp-sound" hidden><span class="it">🔊 Attiva l'audio</span><span class="en">🔊 Tap for sound</span></button>
+        <div class="vp-bar">
+          <button class="vp-play" aria-label="Play/Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+          <div class="vp-track"><div class="vp-fill"></div></div>
+          <span class="vp-time">0:00 / 0:00</span>
+          <button class="vp-mute" aria-label="Audio"><svg viewBox="0 0 24 24"></svg></button>
+          <button class="vp-full" aria-label="Fullscreen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
+        </div>
+        <div class="vp-missing"><p class="it">🎬 Qui andrà il video di presentazione</p><p class="en">🎬 Intro video goes here</p></div>
       </div>
     </div>
   </section>
@@ -359,6 +397,53 @@
     hideEventTypeDetails: false,
     cssVarsPerTheme: { light: { "cal-brand": "#B23A26" }, dark: { "cal-brand": "#F2A488" } }
   });
+</script>
+
+<!-- Custom intro video player: plays (muted) when scrolled into view, pauses when scrolled away -->
+<script>
+(function(){
+  const box=document.getElementById('vp'); if(!box) return;
+  const v=box.querySelector('video'), big=box.querySelector('.vp-big'), sound=box.querySelector('.vp-sound'),
+        playBtn=box.querySelector('.vp-play'), muteBtn=box.querySelector('.vp-mute'), fullBtn=box.querySelector('.vp-full'),
+        track=box.querySelector('.vp-track'), fill=box.querySelector('.vp-fill'), time=box.querySelector('.vp-time');
+  const I={play:'<path d="M8 5v14l11-7z"/>',pause:'<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>',
+    on:'<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/>',
+    off:'<path d="M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/>'};
+  let userPaused=false, inView=false;
+  const fmt=t=>{t=Math.floor(t||0);return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+  function ui(){
+    const p=!v.paused; box.classList.toggle('playing',p); box.classList.toggle('paused',!p);
+    playBtn.querySelector('svg').innerHTML=p?I.pause:I.play;
+    muteBtn.querySelector('svg').innerHTML=v.muted?I.off:I.on;
+    sound.hidden=!(v.muted && p);
+  }
+  function tick(){ fill.style.width=(v.duration?v.currentTime/v.duration*100:0)+'%';
+    time.textContent=fmt(v.currentTime)+' / '+fmt(v.duration); }
+  const play=()=>v.play().catch(()=>{});
+  function toggle(){ if(v.paused){userPaused=false;play();} else {userPaused=true;v.pause();} }
+  ['play','pause','volumechange'].forEach(e=>v.addEventListener(e,ui));
+  ['timeupdate','loadedmetadata'].forEach(e=>v.addEventListener(e,tick));
+  v.addEventListener('ended',()=>{userPaused=true;ui();});
+  v.addEventListener('error',()=>box.classList.add('missing'));
+  v.addEventListener('click',toggle); big.addEventListener('click',e=>{e.stopPropagation();v.muted=false;userPaused=false;play();});
+  playBtn.addEventListener('click',toggle);
+  muteBtn.addEventListener('click',()=>{v.muted=!v.muted;});
+  sound.addEventListener('click',e=>{e.stopPropagation();v.muted=false;if(v.ended)v.currentTime=0;play();});
+  fullBtn.addEventListener('click',()=>{
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(box.requestFullscreen) box.requestFullscreen();
+    else if(v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+  });
+  track.addEventListener('click',e=>{ if(!v.duration) return; const r=track.getBoundingClientRect();
+    v.currentTime=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))*v.duration; });
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(es=>es.forEach(en=>{
+      inView=en.isIntersecting;
+      if(inView && !userPaused && !v.ended) play(); else if(!inView && !v.paused) v.pause();
+    }),{threshold:.6}).observe(box);
+  }
+  ui();
+})();
 </script>
 
 <script>
